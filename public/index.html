@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.min.js"></script>
+    <title>OK Coders Blog</title>
+    <link rel="icon" href="17.png"></link>
+    <script>
+    angular.module('blogApp', []);
+
+    angular.module('blogApp').controller('BlogCtrl', function($scope,$http){
+
+      var promise = $http.get('/blogReturn');
+      promise.then(httpSuccess, httpError);
+
+      function httpSuccess(response) {
+        $scope.blogPosts = response.data;
+
+      }
+      function httpError(response) {
+        console.log('http error :', response);
+      }
+
+
+
+      $scope.savePost = function() {
+
+        var newDate = new Date()
+        newDate = newDate.toUTCString();
+
+        $http.post('/blogReturn/',{
+          title : $scope.titleData,
+          post : $scope.bodyData,
+          time : newDate,
+          user : "Anonymous"
+        }).then(function(response){
+          $scope.blogPosts = response.data;
+          $scope.titleData = "";
+          $scope.bodyData = "";
+        });
+
+      };
+
+
+    });
+    </script>
+    <style>
+      #blogIcon {
+        height: 110px;
+        width: 250px;
+        margin: 0 30px;
+      }
+
+    </style>
+  </head>
+
+  <body ng-app="blogApp" ng-controller="BlogCtrl">
+
+    <div class="page-header text-center">
+      <h1><img id="blogIcon" src="18.png">OK Coders Blog  |<small> Powered by Node and Angular</small></h1>
+    </div>
+
+    <div class="container" style="margin-top: 30px">
+      <div class="row">
+
+        <div class="col-md-4"><!--Create Post-->
+          <div class="panel panel-warning">
+            <div class="panel-heading">
+              <h3 class="panel-title">Create Post</h3>
+            </div>
+
+            <div class="panel-body">
+
+              <div class="form-group">
+                <label>Title</label>
+                <input type="text" class="form-control" ng-model="titleData" required>
+              </div>
+
+              <div class="form-group">
+                <label>Body</label>
+                <textarea rows="8" class="form-control" ng-model="bodyData" required></textarea>
+              </div>
+
+              <input type="button" class="btn btn-success text-center" ng-click="savePost()" value="Save Post" ng-disabled="!titleData || !bodyData">
+
+            </div>
+          </div>
+        </div><!--End Create Post -->
+
+
+        <div class="col-md-8"><!--Blog Posts-->
+          <div class="panel panel-primary">
+
+            <div class="panel-heading">
+              <h3 class="panel-title">Blog Posts</h3>
+            </div>
+
+            <div class="panel-body" ng-repeat="post in blogPosts">
+
+            <table class="table">
+
+              <tr>
+                <th><span style="font-size: 1.4em">{{post.title}} &nbsp;&nbsp;&nbsp;|</span> &nbsp;&nbsp;&nbsp; <small>{{post.time}}</small><div class="pull-right"><span class="glyphicon glyphicon-user pull-left"></span> &nbsp; {{post.user}}</div></th>
+              </tr>
+              <tr>
+                <td><p style="white-space: pre-line">{{post.post}}</p>
+                  <div class="btn-group pull-right" role="group" style="font-size: 1.8em; ">
+                    <button type="button" class="btn btn-danger"><span class="glyphicon glyphicon-heart-empty"></span></button>
+                    <button type="button" class="btn"><span class="glyphicon glyphicon-thumbs-down"></span></button>
+                    <button type="button" class="btn btn-warning"><span class="glyphicon glyphicon-edit"></span></button>
+                    <button type="button" class="btn btn-primary"><span class="glyphicon glyphicon-trash"></span></button>
+                  </div>
+                </td>
+              </tr>
+
+            <table>
+
+
+            </div>
+
+          </div>
+        </div><!--End Blog Posts-->
+
+      </div><!--End row-->
+    </div><!--End container-->
+
+  </body>
+</html>
