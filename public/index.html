@@ -7,43 +7,54 @@
     <title>OK Coders Blog</title>
     <link rel="icon" href="17.png"></link>
     <script>
-    angular.module('blogApp', []);
+      angular.module('blogApp', []);
 
-    angular.module('blogApp').controller('BlogCtrl', function($scope,$http){
+      angular.module('blogApp').controller('BlogCtrl', function($scope,$http){
 
-      var promise = $http.get('/blogReturn');
-      promise.then(httpSuccess, httpError);
+        var promise = $http.get('/blogReturn');
 
-      function httpSuccess(response) {
-        $scope.blogPosts = response.data;
+        promise.then(httpSuccess, httpError);
 
-      }
-      function httpError(response) {
-        console.log('http error :', response);
-      }
-
-
-
-      $scope.savePost = function() {
-
-        var newDate = new Date()
-        newDate = newDate.toUTCString();
-
-        $http.post('/blogReturn/',{
-          title : $scope.titleData,
-          post : $scope.bodyData,
-          time : newDate,
-          user : "Anonymous"
-        }).then(function(response){
+        function httpSuccess(response) {
           $scope.blogPosts = response.data;
-          $scope.titleData = "";
-          $scope.bodyData = "";
-        });
+        }
 
-      };
+        function httpError(response) {
+          console.log('http error :', response);
+        }
 
 
-    });
+        $scope.saveButton = "Save Post";
+
+        $scope.savePost = function() {
+
+          var newDate = new Date()
+          newDate = newDate.toUTCString();
+
+          $http.post('/blogReturn/',{
+            title : $scope.titleData,
+            body : $scope.bodyData,
+            time : newDate,
+            user : "Anonymous"
+          }).then(function(response){
+            $scope.blogPosts = response.data;
+            $scope.titleData = "";
+            $scope.bodyData = "";
+            $scope.saveButton = "Save Post";
+          });
+
+        };
+
+        $scope.editPost = function(oldMe) {
+          var newMe = angular.copy(oldMe);
+          $scope.titleData = newMe.title;
+          $scope.bodyData = newMe.body;
+          $scope.saveButton = "Update Post"
+
+        }
+
+
+      });
     </script>
     <style>
       #blogIcon {
@@ -82,7 +93,7 @@
                 <textarea rows="8" class="form-control" ng-model="bodyData" required></textarea>
               </div>
 
-              <input type="button" class="btn btn-success text-center" ng-click="savePost()" value="Save Post" ng-disabled="!titleData || !bodyData">
+              <input type="button" class="btn btn-success text-center" ng-click="savePost()" value={{saveButton}} ng-disabled="!titleData || !bodyData">
 
             </div>
           </div>
@@ -104,11 +115,11 @@
                 <th><span style="font-size: 1.4em">{{post.title}} &nbsp;&nbsp;&nbsp;|</span> &nbsp;&nbsp;&nbsp; <small>{{post.time}}</small><div class="pull-right"><span class="glyphicon glyphicon-user pull-left"></span> &nbsp; {{post.user}}</div></th>
               </tr>
               <tr>
-                <td><p style="white-space: pre-line">{{post.post}}</p>
+                <td><p style="white-space: pre-line">{{post.body}}</p>
                   <div class="btn-group pull-right" role="group" style="font-size: 1.8em; ">
                     <button type="button" class="btn btn-danger"><span class="glyphicon glyphicon-heart-empty"></span></button>
                     <button type="button" class="btn"><span class="glyphicon glyphicon-thumbs-down"></span></button>
-                    <button type="button" class="btn btn-warning"><span class="glyphicon glyphicon-edit"></span></button>
+                    <button type="button" class="btn btn-warning"><span class="glyphicon glyphicon-edit" ng-click="editPost(post)"></span></button>
                     <button type="button" class="btn btn-primary"><span class="glyphicon glyphicon-trash"></span></button>
                   </div>
                 </td>

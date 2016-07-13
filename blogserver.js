@@ -2,22 +2,42 @@ var express = require('express');
 var app = express();
 var bodyParser = require('body-parser');
 
+var mongoose = require('mongoose');
+mongoose.Promise = Promise;
+mongoose.connect('mongodb://localhost/okcoders');
+
 app.use(express.static('./public'));
 app.use(bodyParser());
 
-var blogPosts = [];
+var BlogPost = require('./models/blogpost');
 
 app.get('/blogReturn', function(req, res){
-  res.json(blogPosts);
+  BlogPost.find().exec().then(function(blogPosts){
+    res.json(blogPosts);
+  });
 });
 
 app.post('/blogReturn/', function(req,res){
   var newPost = req.body;
-  blogPosts.push(newPost);
-  console.log(newPost);
-  res.json(blogPosts);
-});
 
+  if(newPost._id) {
+    BlogPost.findOneAndUpdate({_id:newPost._id}, newPost).exec().then(function(req, res){
+      BlogPost.find().exec().then(function(blogPosts){
+        res.json(blogPosts);
+      });
+    });
+  } else {
+    var sendPost = new BlogPost(newPost);
+    sendPost.save().then(function(req, res){
+      BlogPost.find().exec().then(function(blogPosts){
+        res.json(blogPosts);
+      });
+    });
+
+    // blogPosts.push(newPost);
+    // res.json(blogPosts);
+  }
+});
 app.listen(8080, function() {
   console.log('App listening at http://localhost:8080');
 
