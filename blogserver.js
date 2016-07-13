@@ -21,21 +21,14 @@ app.post('/blogReturn/', function(req,res){
   var newPost = req.body;
 
   if(newPost._id) {
-    BlogPost.findOneAndUpdate({_id:newPost._id}, newPost).exec().then(function(req, res){
-      BlogPost.find().exec().then(function(blogPosts){
-        res.json(blogPosts);
-      });
+    BlogPost.findOneAndUpdate({_id:newPost._id}, newPost).exec().then(function(){
+      res.json(true);
     });
   } else {
     var sendPost = new BlogPost(newPost);
-    sendPost.save().then(function(req, res){
-      BlogPost.find().exec().then(function(blogPosts){
-        res.json(blogPosts);
-      });
+    sendPost.save().then(function(){
+      res.json(true);
     });
-
-    // blogPosts.push(newPost);
-    // res.json(blogPosts);
   }
 });
 app.listen(8080, function() {

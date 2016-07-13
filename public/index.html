@@ -23,6 +23,12 @@
           console.log('http error :', response);
         }
 
+        function getPosts() {
+          $http.get('/blogReturn').then(function(response){
+            $scope.blogPosts = response.data;
+          });
+        }
+
 
         $scope.saveButton = "Save Post";
 
@@ -41,6 +47,7 @@
             $scope.titleData = "";
             $scope.bodyData = "";
             $scope.saveButton = "Save Post";
+            getPosts();
           });
 
         };
@@ -56,14 +63,7 @@
 
       });
     </script>
-    <style>
-      #blogIcon {
-        height: 110px;
-        width: 250px;
-        margin: 0 30px;
-      }
-
-    </style>
+    <style>#blogIcon {height: 110px; width: 250px; margin: 0 30px;}</style>
   </head>
 
   <body ng-app="blogApp" ng-controller="BlogCtrl">
