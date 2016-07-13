@@ -37,27 +37,22 @@
           var newDate = new Date()
           newDate = newDate.toUTCString();
 
-          $http.post('/blogReturn/',{
-            title : $scope.titleData,
-            body : $scope.bodyData,
-            time : newDate,
-            user : "Anonymous"
-          }).then(function(response){
+          $scope.postMe.time = newDate;
+          $scope.postMe.user = "Anonymous"
+
+
+          $http.post('/blogReturn/',$scope.postMe).then(function(response){
             $scope.blogPosts = response.data;
-            $scope.titleData = "";
-            $scope.bodyData = "";
+            $scope.postMe = {};
             $scope.saveButton = "Save Post";
             getPosts();
           });
 
         };
 
-        $scope.editPost = function(oldMe) {
-          var newMe = angular.copy(oldMe);
-          $scope.titleData = newMe.title;
-          $scope.bodyData = newMe.body;
-          $scope.saveButton = "Update Post"
-
+        $scope.editPost = function(oldPost) {
+          $scope.postMe = angular.copy(oldPost);
+          $scope.saveButton = "Update Post";
         }
 
 
@@ -85,15 +80,15 @@
 
               <div class="form-group">
                 <label>Title</label>
-                <input type="text" class="form-control" ng-model="titleData" required>
+                <input type="text" class="form-control" ng-model="postMe.title" required>
               </div>
 
               <div class="form-group">
                 <label>Body</label>
-                <textarea rows="8" class="form-control" ng-model="bodyData" required></textarea>
+                <textarea rows="8" class="form-control" ng-model="postMe.body" required></textarea>
               </div>
 
-              <input type="button" class="btn btn-success text-center" ng-click="savePost()" value={{saveButton}} ng-disabled="!titleData || !bodyData">
+              <input type="button" class="btn btn-success text-center" ng-click="savePost()" value={{saveButton}} ng-disabled="!postMe.title || !postMe.body">
 
             </div>
           </div>
