@@ -41,7 +41,7 @@
           $scope.postMe.user = "Anonymous"
 
 
-          $http.post('/blogReturn/',$scope.postMe).then(function(response){
+          $http.post('/blogReturn',$scope.postMe).then(function(response){
             $scope.blogPosts = response.data;
             $scope.postMe = {};
             $scope.saveButton = "Save Post";
@@ -53,6 +53,12 @@
         $scope.editPost = function(oldPost) {
           $scope.postMe = angular.copy(oldPost);
           $scope.saveButton = "Update Post";
+        }
+
+        $scope.killPost = function(killMe) {
+          $http.delete('/blogReturn/'+killMe._id).then(function(){
+            getPosts();
+          });
         }
 
 
@@ -115,7 +121,7 @@
                     <button type="button" class="btn btn-danger"><span class="glyphicon glyphicon-heart-empty"></span></button>
                     <button type="button" class="btn"><span class="glyphicon glyphicon-thumbs-down"></span></button>
                     <button type="button" class="btn btn-warning"><span class="glyphicon glyphicon-edit" ng-click="editPost(post)"></span></button>
-                    <button type="button" class="btn btn-primary"><span class="glyphicon glyphicon-trash"></span></button>
+                    <button type="button" class="btn btn-primary"><span class="glyphicon glyphicon-trash" ng-click="killPost(post)"></span></button>
                   </div>
                 </td>
               </tr>

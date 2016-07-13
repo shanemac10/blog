@@ -17,7 +17,7 @@ app.get('/blogReturn', function(req, res){
   });
 });
 
-app.post('/blogReturn/', function(req,res){
+app.post('/blogReturn', function(req,res){
   var newPost = req.body;
 
   if(newPost._id) {
@@ -30,6 +30,13 @@ app.post('/blogReturn/', function(req,res){
       res.json(true);
     });
   }
+});
+
+app.delete('/blogReturn/:id', function(req, res){
+  var killMe = req.params.id;
+  BlogPost.findOneAndRemove({_id:killMe}).exec().then(function(){
+    res.json(true);
+  });
 });
 
 app.listen(8080, function() {
