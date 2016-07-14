@@ -3,8 +3,10 @@ var mongoose = require('mongoose');
 var BlogPost = mongoose.model('BlogPost', {
   title : String,
   body : String,
-  time : Date,
-  user : String
+  time : String,
+  user : String,
+  timestamp: Date,
+  edited : String
 });
 
 module.exports = BlogPost;

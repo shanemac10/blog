@@ -12,7 +12,7 @@ app.use(bodyParser());
 var BlogPost = require('./models/blogpost');
 
 app.get('/blogReturn', function(req, res){
-  BlogPost.find().exec().then(function(blogPosts){
+  BlogPost.find().sort({timestamp:-1}).exec().then(function(blogPosts){
     res.json(blogPosts);
   });
 });

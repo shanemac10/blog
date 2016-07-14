@@ -2,20 +2,25 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.min.js"></script>
+
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.6/angular.min.js"></script>
+		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/1.3.3/ui-bootstrap.min.js"></script>
+		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/1.3.3/ui-bootstrap-tpls.min.js"></script>
+
     <title>OK Coders Blog</title>
     <link rel="icon" href="17.png"></link>
-    <script>
-      angular.module('blogApp', []);
 
-      angular.module('blogApp').controller('BlogCtrl', function($scope,$http){
+    <script>
+      angular.module('blogApp', ['ui.bootstrap']);
+
+      angular.module('blogApp').controller('BlogCtrl', function($scope,$http,$uibModal){
 
         var promise = $http.get('/blogReturn');
 
         promise.then(httpSuccess, httpError);
 
-        function httpSuccess(response) {
+        function httpSuccess(response) {  //gets posts on page load
           $scope.blogPosts = response.data;
         }
 
@@ -29,40 +34,66 @@
           });
         }
 
-
         $scope.saveButton = "Save Post";
+
+        $scope.popPost = function(postBack) {
+
+          var modalInstance = $uibModal.open({
+						templateUrl: 'post.html',   //loads html template
+						controller: 'PopCtrl',   //loads modal controller for this instance
+						resolve: {
+							postPass: function() {return postBack;}		//brings a passed post along for the ride
+						}
+					});
+					modalInstance.result.then(function() {			//then refresh the list after modal closes
+						getPosts();
+					});
+        }
+
+      });
+
+
+      angular.module('blogApp').controller('PopCtrl', function($scope,$uibModal,$uibModalInstance,$http,postPass) {		// Inject our dependencies and postPass
+
+        $scope.postMe = angular.copy(postPass); //populates the form with the data in the postBack that we passed as postPass here
+
+        if(!$scope.postMe) {$scope.saveButton = "Save Post";} else {$scope.saveButton = "Update Post" ;}
 
         $scope.savePost = function() {
 
-          var newDate = new Date()
-          newDate = newDate.toUTCString();
+          var timeStamp = new Date();
+
+          if(!$scope.postMe.timestamp){  //if there's no timestamp then we know it's a new user- and we can give them some starter info
+            $scope.postMe.timestamp = timeStamp;
+            $scope.postMe.user = "Anonymous";
+          } else {
+            $scope.postMe.edited = "EDITED";  //no timestamp means this post id being edited, so we will display this as a badge in the blog
+          }
+
+          var newDate = timeStamp.toString();
 
           $scope.postMe.time = newDate;
-          $scope.postMe.user = "Anonymous"
-
 
           $http.post('/blogReturn',$scope.postMe).then(function(response){
-            $scope.blogPosts = response.data;
-            $scope.postMe = {};
-            $scope.saveButton = "Save Post";
-            getPosts();
+            $uibModalInstance.close();
           });
 
         };
 
-        $scope.editPost = function(oldPost) {
-          $scope.postMe = angular.copy(oldPost);
-          $scope.saveButton = "Update Post";
-        }
-
         $scope.killPost = function(killMe) {
-          $http.delete('/blogReturn/'+killMe._id).then(function(){
-            getPosts();
-          });
-        }
 
+          $http.delete('/blogReturn/'+killMe._id).then(function(){
+            $uibModalInstance.close();
+          });
+
+        };
+
+        $scope.cancel = function() {
+					$uibModalInstance.dismiss();
+        }
 
       });
+
     </script>
     <style>#blogIcon {height: 110px; width: 250px; margin: 0 30px;}</style>
   </head>
@@ -76,52 +107,35 @@
     <div class="container" style="margin-top: 30px">
       <div class="row">
 
-        <div class="col-md-4"><!--Create Post-->
-          <div class="panel panel-warning">
-            <div class="panel-heading">
-              <h3 class="panel-title">Create Post</h3>
-            </div>
-
-            <div class="panel-body">
-
-              <div class="form-group">
-                <label>Title</label>
-                <input type="text" class="form-control" ng-model="postMe.title" required>
-              </div>
-
-              <div class="form-group">
-                <label>Body</label>
-                <textarea rows="8" class="form-control" ng-model="postMe.body" required></textarea>
-              </div>
-
-              <input type="button" class="btn btn-success text-center" ng-click="savePost()" value={{saveButton}} ng-disabled="!postMe.title || !postMe.body">
-
-            </div>
-          </div>
-        </div><!--End Create Post -->
-
-
-        <div class="col-md-8"><!--Blog Posts-->
+        <div class="col-md-10 col-md-offset-1" ><!--Blog Posts-->
           <div class="panel panel-primary">
 
-            <div class="panel-heading">
-              <h3 class="panel-title">Blog Posts</h3>
+            <div class="panel-heading" style="height: 55px;">
+              <h2 class="panel-title" style="font-size: 1.8em;">Blog Posts
+                <button type="button" class="btn btn-success pull-right" ng-click="popPost()">ADD NEW POST &nbsp;&nbsp;&nbsp;
+                  <span class="glyphicon glyphicon-plus"></span>
+                </button>
+              </h2>
             </div>
 
             <div class="panel-body" ng-repeat="post in blogPosts">
 
-            <table class="table">
+            <table class="table table-bordered">
 
               <tr>
-                <th><span style="font-size: 1.4em">{{post.title}} &nbsp;&nbsp;&nbsp;|</span> &nbsp;&nbsp;&nbsp; <small>{{post.time}}</small><div class="pull-right"><span class="glyphicon glyphicon-user pull-left"></span> &nbsp; {{post.user}}</div></th>
+                <th class="success"><span style="font-size: 1.4em;">{{post.title}} &nbsp;&nbsp;&nbsp;|</span> &nbsp;&nbsp;&nbsp;
+                  <small>{{post.timestamp | date : 'medium'}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</small>
+                  <span class="label label-default" ng-if="post.edited"><span class="glyphicon glyphicon-pencil"></span> {{post.edited}}</span>
+                  <div class="pull-right"><span class="glyphicon glyphicon-user pull-left"></span> &nbsp; {{post.user}}&nbsp;&nbsp;&nbsp;</div>
+                </th>
               </tr>
+
               <tr>
                 <td><p style="white-space: pre-line">{{post.body}}</p>
                   <div class="btn-group pull-right" role="group" style="font-size: 1.8em; ">
-                    <button type="button" class="btn btn-danger"><span class="glyphicon glyphicon-heart-empty"></span></button>
-                    <button type="button" class="btn"><span class="glyphicon glyphicon-thumbs-down"></span></button>
-                    <button type="button" class="btn btn-warning"><span class="glyphicon glyphicon-edit" ng-click="editPost(post)"></span></button>
-                    <button type="button" class="btn btn-primary"><span class="glyphicon glyphicon-trash" ng-click="killPost(post)"></span></button>
+                    <!-- <button type="button" class="btn btn-danger"><span class="glyphicon glyphicon-heart-empty"></span></button>
+                    <button type="button" class="btn"><span class="glyphicon glyphicon-thumbs-down"></span></button> -->
+                    <button type="button" class="btn btn-default" ng-click="popPost(post)">EDIT POST &nbsp;&nbsp;&nbsp;<span class="glyphicon glyphicon-edit"></span></button>
                   </div>
                 </td>
               </tr>
